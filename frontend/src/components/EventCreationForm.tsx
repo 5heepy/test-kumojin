@@ -32,8 +32,6 @@ const EventCreationForm = () => {
     formState: { errors },
   } = useForm();
 
-  console.log({ errors });
-
   const onSubmit = (data: any) => console.log(data);
 
   return (
