@@ -1,4 +1,3 @@
-import React from 'react';
 import { HomePage } from './pages';
 import { ChakraProvider } from '@chakra-ui/react';
 

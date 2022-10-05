@@ -17,6 +17,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { useCreateEvent } from '../hooks';
 import { EventCreationFormValues } from '../models';
 import { useCallback } from 'react';
+import dayjs from 'dayjs';
 
 const formDefaultValues = {
   timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -62,8 +63,8 @@ const EventCreationForm = () => {
               render={({ field }) => (
                 <FormControl isDisabled={loading}>
                   <FormLabel>Name</FormLabel>
-                  <Input {...field} />
-                  {errors.name && <FormHelperText>Required.</FormHelperText>}
+                  <Input {...field} data-testid='TEST_name_input' />
+                  {errors.name && <FormHelperText data-testid='TEST_name_error'>Required.</FormHelperText>}
                 </FormControl>
               )}
             />
@@ -76,7 +77,7 @@ const EventCreationForm = () => {
               render={({ field }) => (
                 <FormControl isDisabled={loading}>
                   <FormLabel>Description</FormLabel>
-                  <Textarea {...field} />
+                  <Textarea {...field} data-testid='TEST_description_input' />
                 </FormControl>
               )}
             />
@@ -90,9 +91,13 @@ const EventCreationForm = () => {
               render={({ field }) => (
                 <FormControl isDisabled={loading}>
                   <FormLabel>Start date</FormLabel>
-                  <Input {...field} type='datetime-local' />
+                  <Input
+                    {...field}
+                    type='datetime-local'
+                    data-testid='TEST_start_date_input'
+                  />
                   {errors.startDate && (
-                    <FormHelperText>Required.</FormHelperText>
+                    <FormHelperText data-testid='TEST_start_date_error'>Required.</FormHelperText>
                   )}
                 </FormControl>
               )}
@@ -106,15 +111,20 @@ const EventCreationForm = () => {
               rules={{
                 required: true,
                 validate: {
-                  higherThanStartDate: (value) => value > getValues().startDate,
+                  higherThanStartDate: (value) =>
+                    dayjs(value).isAfter(getValues().startDate),
                 },
               }}
               render={({ field }) => (
                 <FormControl isDisabled={loading}>
                   <FormLabel>End date</FormLabel>
-                  <Input {...field} type='datetime-local' />
+                  <Input
+                    {...field}
+                    type='datetime-local'
+                    data-testid='TEST_end_date_input'
+                  />
                   {errors.endDate && (
-                    <FormHelperText>
+                    <FormHelperText data-testid='TEST_end_date_error'>
                       {endDateErrorMessage(errors.endDate)}
                     </FormHelperText>
                   )}
@@ -133,7 +143,11 @@ const EventCreationForm = () => {
               render={({ field }) => (
                 <FormControl isDisabled={loading}>
                   <FormLabel>Time Zone</FormLabel>
-                  <Select {...field} placeholder='Select Time Zone'>
+                  <Select
+                    {...field}
+                    placeholder='Select Time Zone'
+                    data-testid='TEST_time_zone_input'
+                  >
                     {ianaTimeZones.map((timeZone) => (
                       <option key={timeZone} value={timeZone}>
                         {timeZone}
@@ -141,7 +155,7 @@ const EventCreationForm = () => {
                     ))}
                   </Select>
                   {errors.timeZone && (
-                    <FormHelperText>Required.</FormHelperText>
+                    <FormHelperText data-testid='TEST_time_zone_error'>Required.</FormHelperText>
                   )}
                 </FormControl>
               )}
@@ -149,7 +163,7 @@ const EventCreationForm = () => {
           </GridItem>
 
           <GridItem>
-            <Button type='submit' width='xs'>
+            <Button type='submit' width='xs' data-testid="TEST_submit_button">
               {loading ? <Spinner size='md' /> : 'Create'}
             </Button>
           </GridItem>
