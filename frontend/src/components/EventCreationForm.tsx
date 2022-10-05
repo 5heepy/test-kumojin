@@ -1,4 +1,4 @@
-import { ianaTimeZones } from '../helpers';
+import { mapFormValuesToEvent, ianaTimeZones } from '../helpers';
 import {
   FormControl,
   FormLabel,
@@ -13,13 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import { useCreateEvent } from '../hooks';
-import { EventModel } from '../models';
-import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
-import utc from 'dayjs/plugin/utc';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
+import { EventCreationFormValues } from '../models';
 
 const endDateErrorMessage = (error: { [key: string]: any }) => {
   switch (error.type) {
@@ -36,17 +30,12 @@ const EventCreationForm = () => {
     handleSubmit,
     getValues,
     formState: { errors },
-  } = useForm();
+  } = useForm<EventCreationFormValues>();
 
   const { execute, loading } = useCreateEvent();
 
-  const onSubmit = (data: any) => {
-    const event: EventModel = {
-      ...data,
-      startDate: dayjs(data.startDate).tz(data.timeZone),
-      endDate: dayjs(data.endDate).tz(data.timeZone),
-    };
-
+  const onSubmit = (data: EventCreationFormValues) => {
+    const event = mapFormValuesToEvent(data);
     execute(event);
   };
 
@@ -133,7 +122,7 @@ const EventCreationForm = () => {
               }}
               render={({ field }) => (
                 <FormControl>
-                  <FormLabel>End date</FormLabel>
+                  <FormLabel>Time Zone</FormLabel>
                   <Select
                     {...field}
                     placeholder='Select Time Zone'
@@ -142,7 +131,7 @@ const EventCreationForm = () => {
                     }
                   >
                     {ianaTimeZones.map((timeZone) => (
-                      <option value={timeZone}>{timeZone}</option>
+                      <option key={timeZone} value={timeZone}>{timeZone}</option>
                     ))}
                   </Select>
                   {errors.timeZone && (
@@ -154,7 +143,7 @@ const EventCreationForm = () => {
           </GridItem>
 
           <GridItem>
-            <Input type='submit' value="Create" />
+            <Input type='submit' value='Create' />
           </GridItem>
         </Grid>
       </form>
