@@ -1,3 +1,4 @@
+import { ianaTimeZones } from '../helpers';
 import {
   Accordion,
   AccordionItem,
@@ -11,18 +12,27 @@ import {
   Grid,
   GridItem,
   Input,
+  Select,
   Textarea,
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
+import { useCreateEvent } from '../hooks';
+import { EventModel } from '../models';
+import dayjs, {} from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const endDateErrorMessage = (error: { [key: string]: any }) => {
   switch (error.type) {
-    case "higherThanStartDate":
-      return "End date should be after start date.";
+    case 'higherThanStartDate':
+      return 'End date should be after start date.';
     default:
-      return "Required.";
+      return 'Required.';
   }
-}
+};
 
 const EventCreationForm = () => {
   const {
@@ -32,7 +42,17 @@ const EventCreationForm = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data: any) => console.log(data);
+  const { execute, loading } = useCreateEvent();
+
+  const onSubmit = (data: any) => {
+    const event: EventModel = {
+      ...data,
+      startDate: dayjs(data.startDate).tz(data.timeZone),
+      endDate: dayjs(data.endDate).tz(data.timeZone),
+    }
+
+    execute(event);
+  };
 
   return (
     <Accordion allowMultiple>
@@ -99,25 +119,50 @@ const EventCreationForm = () => {
                 <Controller
                   name='endDate'
                   control={control}
-                  rules={{ 
+                  rules={{
                     required: true,
                     validate: {
-                      higherThanStartDate: value => value > getValues().startDate,
-                    }
+                      higherThanStartDate: (value) =>
+                        value > getValues().startDate,
+                    },
                   }}
                   render={({ field }) => (
                     <FormControl>
                       <FormLabel>End date</FormLabel>
                       <Input {...field} type='datetime-local' />
                       {errors.endDate && (
-                        <FormHelperText>{endDateErrorMessage(errors.endDate)}</FormHelperText>
+                        <FormHelperText>
+                          {endDateErrorMessage(errors.endDate)}
+                        </FormHelperText>
                       )}
                     </FormControl>
                   )}
                 />
               </GridItem>
 
-              {/* //TODO: add timezone selector */}
+              <GridItem>
+                <Controller
+                  name='timeZone'
+                  control={control}
+                  rules={{
+                    required: true,
+                  }}
+                  render={({ field }) => (
+                    <FormControl>
+                      <FormLabel>End date</FormLabel>
+                      <Select {...field} placeholder='Select Time Zone' defaultValue={Intl.DateTimeFormat().resolvedOptions().timeZone}>
+                        {ianaTimeZones.map(timeZone => (
+                          <option value={timeZone}>{timeZone}</option>
+                        ))}
+                      </Select>
+                      {errors.timeZone && (
+                        <FormHelperText>Required.</FormHelperText>
+                      )}
+                    </FormControl>
+                  )}
+                />
+              </GridItem>
+
               <GridItem>
                 <Input type='submit' />
               </GridItem>

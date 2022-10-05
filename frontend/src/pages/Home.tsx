@@ -1,13 +1,16 @@
 import React from 'react';
+import { Grid, GridItem } from '@chakra-ui/react';
 
 import { EventCreationForm } from '../components';
 
 const HomePage = () => {
   return (
-    <div className="Home">
-      <h1>Test Solutions Kumojin</h1>
-      <EventCreationForm />
-    </div>
+    <Grid gap={6}>
+      <GridItem>Test Solutions Kumojin</GridItem>
+      <GridItem>
+        <EventCreationForm />
+      </GridItem>
+    </Grid>
   );
 }
 

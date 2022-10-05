@@ -12,10 +12,12 @@ export const useFetch = (fetcher: (params?: any) => Promise<AxiosResponse>) => {
         setError(null);
   
         try {
+            console.log('allo')
             const response = await fetcher(params);
             setValue(response);
             setLoading(false);
         } catch (error) {
+            console.log({ error })
             setError(error);
             setLoading(false);
         }
