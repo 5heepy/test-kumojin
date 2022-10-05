@@ -7,13 +7,20 @@ import {
   GridItem,
   Input,
   Select,
+  Spinner,
   Stack,
   Text,
   Textarea,
+  Button,
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import { useCreateEvent } from '../hooks';
 import { EventCreationFormValues } from '../models';
+import { useCallback } from 'react';
+
+const formDefaultValues = {
+  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+};
 
 const endDateErrorMessage = (error: { [key: string]: any }) => {
   switch (error.type) {
@@ -30,14 +37,17 @@ const EventCreationForm = () => {
     handleSubmit,
     getValues,
     formState: { errors },
-  } = useForm<EventCreationFormValues>();
+  } = useForm<EventCreationFormValues>({ defaultValues: formDefaultValues });
 
   const { execute, loading } = useCreateEvent();
 
-  const onSubmit = (data: EventCreationFormValues) => {
-    const event = mapFormValuesToEvent(data);
-    execute(event);
-  };
+  const onSubmit = useCallback(
+    async (data: EventCreationFormValues) => {
+      const event = mapFormValuesToEvent(data);
+      await execute(event);
+    },
+    [execute]
+  );
 
   return (
     <Stack spacing={6}>
@@ -50,7 +60,7 @@ const EventCreationForm = () => {
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-                <FormControl>
+                <FormControl isDisabled={loading}>
                   <FormLabel>Name</FormLabel>
                   <Input {...field} />
                   {errors.name && <FormHelperText>Required.</FormHelperText>}
@@ -64,7 +74,7 @@ const EventCreationForm = () => {
               name='description'
               control={control}
               render={({ field }) => (
-                <FormControl>
+                <FormControl isDisabled={loading}>
                   <FormLabel>Description</FormLabel>
                   <Textarea {...field} />
                 </FormControl>
@@ -78,7 +88,7 @@ const EventCreationForm = () => {
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-                <FormControl>
+                <FormControl isDisabled={loading}>
                   <FormLabel>Start date</FormLabel>
                   <Input {...field} type='datetime-local' />
                   {errors.startDate && (
@@ -100,7 +110,7 @@ const EventCreationForm = () => {
                 },
               }}
               render={({ field }) => (
-                <FormControl>
+                <FormControl isDisabled={loading}>
                   <FormLabel>End date</FormLabel>
                   <Input {...field} type='datetime-local' />
                   {errors.endDate && (
@@ -121,17 +131,13 @@ const EventCreationForm = () => {
                 required: true,
               }}
               render={({ field }) => (
-                <FormControl>
+                <FormControl isDisabled={loading}>
                   <FormLabel>Time Zone</FormLabel>
-                  <Select
-                    {...field}
-                    placeholder='Select Time Zone'
-                    defaultValue={
-                      Intl.DateTimeFormat().resolvedOptions().timeZone
-                    }
-                  >
+                  <Select {...field} placeholder='Select Time Zone'>
                     {ianaTimeZones.map((timeZone) => (
-                      <option key={timeZone} value={timeZone}>{timeZone}</option>
+                      <option key={timeZone} value={timeZone}>
+                        {timeZone}
+                      </option>
                     ))}
                   </Select>
                   {errors.timeZone && (
@@ -143,7 +149,9 @@ const EventCreationForm = () => {
           </GridItem>
 
           <GridItem>
-            <Input type='submit' value='Create' />
+            <Button type='submit' width='xs'>
+              {loading ? <Spinner size='md' /> : 'Create'}
+            </Button>
           </GridItem>
         </Grid>
       </form>
