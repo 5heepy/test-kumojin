@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import dayjs from 'dayjs';
 import { mapFormValuesToEvent } from '../helpers';
+import { EventCreationFormValues } from '../models';
 import EventCreationForm from './EventCreationForm';
 
 const mockExecute = jest.fn();
@@ -47,9 +47,33 @@ describe('EventCreationForm', () => {
     return screen.getByRole('button');
   };
 
+  const submitForm = () => {
+    const submitButton = getSubmitButton();
+
+    fireEvent.submit(submitButton);
+  };
+
+  const fillForm = (values: Partial<EventCreationFormValues>) => {
+    fireEvent.input(getNameInput(), {
+      target: { value: values.name },
+    });
+    fireEvent.input(getDescriptionInput(), {
+      target: { value: values.description },
+    });
+    fireEvent.input(getStartDateInput(), {
+      target: { value: values.startDate },
+    });
+    fireEvent.input(getEndDateInput(), {
+      target: { value: values.endDate },
+    });
+    fireEvent.input(getTimeZoneInput(), {
+      target: { value: values.timeZone },
+    });
+  }
+
   beforeEach(() => {
     render(<EventCreationForm />);
-  })
+  });
 
   test('should render name input', async () => {
     const nameInput = getNameInput();
@@ -79,17 +103,12 @@ describe('EventCreationForm', () => {
   describe('when creating an event', () => {
     describe('with missing name', () => {
       test('should not execute request', async () => {
-        const startDateInput = getStartDateInput();
-        const endDateInput = getEndDateInput();
-        const submitButton = getSubmitButton();
+        fillForm({
+          startDate,
+          endDate,
+        });
 
-        fireEvent.input(startDateInput, {
-          target: { value: startDate },
-        });
-        fireEvent.input(endDateInput, {
-          target: { value: endDate },
-        });
-        fireEvent.submit(submitButton);
+        submitForm();
 
         await waitFor(() => {
           expect(mockExecute).toHaveBeenCalledTimes(0);
@@ -98,19 +117,13 @@ describe('EventCreationForm', () => {
     });
 
     describe('with missing start date', () => {
-
       test('should not execute request', async () => {
-        const nameInput = getNameInput();
-        const endDateInput = getEndDateInput();
-        const submitButton = getSubmitButton();
+        fillForm({
+          name: 'test name',
+          endDate,
+        });
 
-        fireEvent.input(nameInput, {
-          target: { value: 'test name' },
-        });
-        fireEvent.input(endDateInput, {
-          target: { value: endDate },
-        });
-        fireEvent.submit(submitButton);
+        submitForm();
 
         await waitFor(() => {
           expect(mockExecute).toHaveBeenCalledTimes(0);
@@ -120,17 +133,12 @@ describe('EventCreationForm', () => {
 
     describe('with missing end date', () => {
       test('should not execute request', async () => {
-        const nameInput = getNameInput();
-        const startDateInput = getStartDateInput();
-        const submitButton = getSubmitButton();
-
-        fireEvent.input(nameInput, {
-          target: { value: 'test name' },
+        fillForm({
+          name: 'test name',
+          startDate,
         });
-        fireEvent.input(startDateInput, {
-          target: { value: startDate },
-        });
-        fireEvent.submit(submitButton);
+        
+        submitForm();
 
         await waitFor(() => {
           expect(mockExecute).toHaveBeenCalledTimes(0);
@@ -140,21 +148,13 @@ describe('EventCreationForm', () => {
 
     describe('with end date before start date', () => {
       test('should not execute request', async () => {
-        const nameInput = getNameInput();
-        const startDateInput = getStartDateInput();
-        const endDateInput = getEndDateInput();
-        const submitButton = getSubmitButton();
+        fillForm({
+          name: 'test name',
+          startDate,
+          endDate: badEndDate,
+        });
 
-        fireEvent.input(nameInput, {
-          target: { value: 'test name' },
-        });
-        fireEvent.input(startDateInput, {
-          target: { value: startDate },
-        });
-        fireEvent.input(endDateInput, {
-          target: { value: badEndDate },
-        });
-        fireEvent.submit(submitButton);
+        submitForm();
 
         await waitFor(() => {
           expect(mockExecute).toHaveBeenCalledTimes(0);
@@ -164,25 +164,14 @@ describe('EventCreationForm', () => {
 
     describe('with missing time zone', () => {
       test('should not execute request', async () => {
-        const nameInput = getNameInput();
-        const startDateInput = getStartDateInput();
-        const endDateInput = getEndDateInput();
-        const timeZoneInput = getTimeZoneInput();
-        const submitButton = getSubmitButton();
+        fillForm({
+          name: 'test name',
+          startDate,
+          endDate: endDate,
+          timeZone: undefined,
+        });
 
-        fireEvent.input(nameInput, {
-          target: { value: 'test name' },
-        });
-        fireEvent.input(startDateInput, {
-          target: { value: startDate },
-        });
-        fireEvent.input(endDateInput, {
-          target: { value: endDate },
-        });
-        fireEvent.input(timeZoneInput, {
-          target: { value: null },
-        });
-        fireEvent.submit(submitButton);
+        submitForm();
 
         await waitFor(() => {
           expect(mockExecute).toHaveBeenCalledTimes(0);
@@ -194,36 +183,24 @@ describe('EventCreationForm', () => {
       it('should execute request', async () => {
         const testName = 'test name';
         const testDesc = 'test desc';
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-        const nameInput = getNameInput();
-        const descriptionInput = getDescriptionInput();
-        const startDateInput = getStartDateInput();
-        const endDateInput = getEndDateInput();
-        const submitButton = getSubmitButton();
-
-        fireEvent.input(nameInput, {
-          target: { value: testName },
+        fillForm({
+          name: testName,
+          description: testDesc,
+          startDate,
+          endDate,
+          timeZone,
         });
 
-        fireEvent.input(descriptionInput, {
-          target: { value: testDesc },
-        });
-
-        fireEvent.input(startDateInput, {
-          target: { value: startDate },
-        });
-        fireEvent.input(endDateInput, {
-          target: { value: endDate },
-        });
-
-        fireEvent.submit(submitButton);
+        submitForm();
 
         const expectedEvent = mapFormValuesToEvent({
           name: testName,
           description: testDesc,
           startDate,
           endDate,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timeZone,
         });
 
         await waitFor(() => {
