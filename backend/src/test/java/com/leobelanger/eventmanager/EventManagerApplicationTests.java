@@ -3,6 +3,7 @@ package com.leobelanger.eventmanager;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -18,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.util.NestedServletException;
 
 import java.util.Date;
 
@@ -61,6 +63,18 @@ class EventManagerApplicationTests {
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.name", is(eventName)))
 				.andExpect(jsonPath("$.id", notNullValue()));
+	}
+
+	@Test
+	@DisplayName("When creating event with very long name, should throw exception")
+	void testWhenCreatingEventWithLongNameShouldThrowException() {
+		final var eventName = "This is a very long name trying to break the 32 characters barrier";
+
+		final var event = createEventFromName(eventName);
+
+		assertThrows(NestedServletException.class, () -> {
+			mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON));
+		});
 	}
 
 	@Test
