@@ -1,4 +1,4 @@
-import { mapFormValuesToEvent, ianaTimeZones } from '../helpers';
+import { mapFormValuesToEvent, ianaTimeZones, validateEndDate } from '../helpers';
 import {
   FormControl,
   FormErrorMessage,
@@ -16,19 +16,9 @@ import { useForm } from 'react-hook-form';
 import { useCreateEvent } from '../hooks';
 import { EventCreationFormValues } from '../models';
 import { useCallback } from 'react';
-import dayjs from 'dayjs';
 
 const formDefaultValues = {
   timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-};
-
-const endDateErrorMessage = (error: { [key: string]: any }) => {
-  switch (error.type) {
-    case 'higherThanStartDate':
-      return 'End date should be after start date.';
-    default:
-      return 'Required.';
-  }
 };
 
 const EventCreationForm = () => {
@@ -102,33 +92,6 @@ const EventCreationForm = () => {
           </GridItem>
 
           <GridItem>
-            {/* <Controller
-              name='endDate'
-              control={control}
-              rules={{
-                required: true,
-                validate: {
-                  higherThanStartDate: (value) =>
-                    dayjs(value).isAfter(getValues().startDate),
-                },
-              }}
-              render={({ field }) => (
-                <FormControl isDisabled={loading}>
-                  <FormLabel>End date</FormLabel>
-                  <Input
-                    {...field}
-                    type='datetime-local'
-                    data-testid='TEST_end_date_input'
-                  />
-                  {errors.endDate && (
-                    <FormHelperText data-testid='TEST_end_date_error'>
-                      {endDateErrorMessage(errors.endDate)}
-                    </FormHelperText>
-                  )}
-                </FormControl>
-              )}
-            /> */}
-
             <FormControl isDisabled={loading} isInvalid={!!errors.endDate}>
               <FormLabel htmlFor='endDate'>End date</FormLabel>
               <Input
@@ -139,8 +102,7 @@ const EventCreationForm = () => {
                 {...register('endDate', {
                   required: 'Required',
                   validate: {
-                    higherThanStartDate: (value) =>
-                      dayjs(value).isAfter(getValues().startDate),
+                    higherThanStartDate: (value) => validateEndDate(getValues().startDate, value),
                   },
                 })}
               />
