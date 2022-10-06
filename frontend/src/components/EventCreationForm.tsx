@@ -53,6 +53,10 @@ const EventCreationForm = () => {
                 placeholder='Name'
                 {...register('name', {
                   required: 'Required',
+                  maxLength: {
+                    value: 32,
+                    message: 'Event name cannot be longer than 32 characters'
+                  }
                 })}
               />
               <FormErrorMessage>

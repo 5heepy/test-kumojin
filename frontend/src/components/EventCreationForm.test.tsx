@@ -116,6 +116,22 @@ describe('EventCreationForm', () => {
       });
     });
 
+    describe('with name longer than 32 characters', () => {
+      test('should not execute request', async () => {
+        fillForm({
+          name: 'This is a very long name trying to break the 32 characters barrier',
+          startDate,
+          endDate,
+        });
+
+        submitForm();
+
+        await waitFor(() => {
+          expect(mockExecute).toHaveBeenCalledTimes(0);
+        });
+      });
+    });
+
     describe('with missing start date', () => {
       test('should not execute request', async () => {
         fillForm({
