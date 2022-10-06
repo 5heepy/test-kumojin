@@ -1,19 +1,18 @@
 import { mapFormValuesToEvent, ianaTimeZones } from '../helpers';
 import {
   FormControl,
+  FormErrorMessage,
   FormLabel,
-  FormHelperText,
   Grid,
   GridItem,
   Input,
   Select,
-  Spinner,
   Stack,
   Text,
   Textarea,
   Button,
 } from '@chakra-ui/react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useCreateEvent } from '../hooks';
 import { EventCreationFormValues } from '../models';
 import { useCallback } from 'react';
@@ -34,9 +33,9 @@ const endDateErrorMessage = (error: { [key: string]: any }) => {
 
 const EventCreationForm = () => {
   const {
-    control,
     handleSubmit,
     getValues,
+    register,
     formState: { errors },
   } = useForm<EventCreationFormValues>({ defaultValues: formDefaultValues });
 
@@ -56,56 +55,54 @@ const EventCreationForm = () => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid gap={6} w='50%'>
           <GridItem>
-            <Controller
-              name='name'
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <FormControl isDisabled={loading}>
-                  <FormLabel>Name</FormLabel>
-                  <Input {...field} data-testid='TEST_name_input' />
-                  {errors.name && <FormHelperText data-testid='TEST_name_error'>Required.</FormHelperText>}
-                </FormControl>
-              )}
-            />
+            <FormControl isDisabled={loading} isInvalid={!!errors.name}>
+              <FormLabel htmlFor='name'>Name</FormLabel>
+              <Input
+                data-testid='TEST_name_input'
+                id='name'
+                placeholder='Name'
+                {...register('name', {
+                  required: 'Required',
+                })}
+              />
+              <FormErrorMessage>
+                {errors.name && errors.name.message}
+              </FormErrorMessage>
+            </FormControl>
           </GridItem>
 
           <GridItem>
-            <Controller
-              name='description'
-              control={control}
-              render={({ field }) => (
-                <FormControl isDisabled={loading}>
-                  <FormLabel>Description</FormLabel>
-                  <Textarea {...field} data-testid='TEST_description_input' />
-                </FormControl>
-              )}
-            />
+            <FormControl isDisabled={loading} isInvalid={!!errors.description}>
+              <FormLabel htmlFor='description'>Description</FormLabel>
+              <Textarea
+                data-testid='TEST_description_input'
+                id='description'
+                placeholder='Description'
+                {...register('description')}
+              />
+            </FormControl>
           </GridItem>
 
           <GridItem>
-            <Controller
-              name='startDate'
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <FormControl isDisabled={loading}>
-                  <FormLabel>Start date</FormLabel>
-                  <Input
-                    {...field}
-                    type='datetime-local'
-                    data-testid='TEST_start_date_input'
-                  />
-                  {errors.startDate && (
-                    <FormHelperText data-testid='TEST_start_date_error'>Required.</FormHelperText>
-                  )}
-                </FormControl>
-              )}
-            />
+            <FormControl isDisabled={loading} isInvalid={!!errors.startDate}>
+              <FormLabel htmlFor='startDate'>Start date</FormLabel>
+              <Input
+                data-testid='TEST_start_date_input'
+                id='startDate'
+                placeholder='Start date'
+                type='datetime-local'
+                {...register('startDate', {
+                  required: 'Required',
+                })}
+              />
+              <FormErrorMessage>
+                {errors.startDate && errors.startDate.message}
+              </FormErrorMessage>
+            </FormControl>
           </GridItem>
 
           <GridItem>
-            <Controller
+            {/* <Controller
               name='endDate'
               control={control}
               rules={{
@@ -130,41 +127,55 @@ const EventCreationForm = () => {
                   )}
                 </FormControl>
               )}
-            />
+            /> */}
+
+            <FormControl isDisabled={loading} isInvalid={!!errors.endDate}>
+              <FormLabel htmlFor='endDate'>End date</FormLabel>
+              <Input
+                data-testid='TEST_end_date_input'
+                id='endDate'
+                placeholder='End date'
+                type='datetime-local'
+                {...register('endDate', {
+                  required: 'Required',
+                  validate: {
+                    higherThanStartDate: (value) =>
+                      dayjs(value).isAfter(getValues().startDate),
+                  },
+                })}
+              />
+              <FormErrorMessage>
+                {errors.endDate && errors.endDate.message}
+              </FormErrorMessage>
+            </FormControl>
+          </GridItem>
+
+          <GridItem>  
+            <FormControl isDisabled={loading} isInvalid={!!errors.timeZone}>
+              <FormLabel htmlFor='timeZone'>Time Zone</FormLabel>
+              <Select
+                id='timeZone'
+                placeholder='Select Time Zone'
+                data-testid='TEST_time_zone_input'
+                {...register('timeZone', {
+                  required: 'Required',
+                })}
+              >
+                {ianaTimeZones.map((timeZone) => (
+                  <option key={timeZone} value={timeZone}>
+                    {timeZone}
+                  </option>
+                ))}
+              </Select>
+              <FormErrorMessage>
+                {errors.timeZone && errors.timeZone.message}
+              </FormErrorMessage>
+            </FormControl>
           </GridItem>
 
           <GridItem>
-            <Controller
-              name='timeZone'
-              control={control}
-              rules={{
-                required: true,
-              }}
-              render={({ field }) => (
-                <FormControl isDisabled={loading}>
-                  <FormLabel>Time Zone</FormLabel>
-                  <Select
-                    {...field}
-                    placeholder='Select Time Zone'
-                    data-testid='TEST_time_zone_input'
-                  >
-                    {ianaTimeZones.map((timeZone) => (
-                      <option key={timeZone} value={timeZone}>
-                        {timeZone}
-                      </option>
-                    ))}
-                  </Select>
-                  {errors.timeZone && (
-                    <FormHelperText data-testid='TEST_time_zone_error'>Required.</FormHelperText>
-                  )}
-                </FormControl>
-              )}
-            />
-          </GridItem>
-
-          <GridItem>
-            <Button type='submit' width='xs' data-testid="TEST_submit_button">
-              {loading ? <Spinner size='md' /> : 'Create'}
+            <Button data-testid="TEST_submit_button" type='submit' width='xs' isLoading={loading} >
+              Create
             </Button>
           </GridItem>
         </Grid>

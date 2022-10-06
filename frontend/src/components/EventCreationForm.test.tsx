@@ -1,10 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import dayjs from 'dayjs';
-import { act } from 'react-dom/test-utils';
 import EventCreationForm from './EventCreationForm';
-
-const startDate = dayjs().toISOString();
-const endDate = dayjs(startDate).add(1, 'hour').toISOString();
 
 const mockExecute = jest.fn();
 
@@ -22,6 +18,10 @@ jest.mock('../hooks', () => {
 });
 
 describe('EventCreationForm', () => {
+  const startDate = '2022-09-09 11:00';
+  const endDate = '2022-09-09 11:30';
+  const badEndDate = '2022-09-09 10:00';
+
   const getNameInput = () => {
     return screen.getByTestId('TEST_name_input');
   };
@@ -46,32 +46,31 @@ describe('EventCreationForm', () => {
     return screen.getByRole('button');
   };
 
-  test('should render name input', () => {
+  beforeEach(() => {
     render(<EventCreationForm />);
+  })
+
+  test('should render name input', async () => {
     const nameInput = getNameInput();
     expect(nameInput).toBeInTheDocument();
   });
 
-  test('should render description input', () => {
-    render(<EventCreationForm />);
+  test('should render description input', async () => {
     const descriptionInput = getDescriptionInput();
     expect(descriptionInput).toBeInTheDocument();
   });
 
-  test('should render start date input', () => {
-    render(<EventCreationForm />);
+  test('should render start date input', async () => {
     const startDateInput = getStartDateInput();
     expect(startDateInput).toBeInTheDocument();
   });
 
-  test('should render end date input', () => {
-    render(<EventCreationForm />);
+  test('should render end date input', async () => {
     const endDateInput = getEndDateInput();
     expect(endDateInput).toBeInTheDocument();
   });
 
   test('should render time zone input', () => {
-    render(<EventCreationForm />);
     const timeZoneInput = getTimeZoneInput();
     expect(timeZoneInput).toBeInTheDocument();
   });
@@ -79,8 +78,6 @@ describe('EventCreationForm', () => {
   describe('when creating an event', () => {
     describe('with missing name', () => {
       test('should not execute request', async () => {
-        render(<EventCreationForm />);
-
         const startDateInput = getStartDateInput();
         const endDateInput = getEndDateInput();
         const submitButton = getSubmitButton();
@@ -102,8 +99,6 @@ describe('EventCreationForm', () => {
     describe('with missing start date', () => {
 
       test('should not execute request', async () => {
-        render(<EventCreationForm />);
-
         const nameInput = getNameInput();
         const endDateInput = getEndDateInput();
         const submitButton = getSubmitButton();
@@ -124,8 +119,6 @@ describe('EventCreationForm', () => {
 
     describe('with missing end date', () => {
       test('should not execute request', async () => {
-        render(<EventCreationForm />);
-
         const nameInput = getNameInput();
         const startDateInput = getStartDateInput();
         const submitButton = getSubmitButton();
@@ -146,8 +139,6 @@ describe('EventCreationForm', () => {
 
     describe('with end date before start date', () => {
       test('should not execute request', async () => {
-        render(<EventCreationForm />);
-
         const nameInput = getNameInput();
         const startDateInput = getStartDateInput();
         const endDateInput = getEndDateInput();
@@ -160,7 +151,7 @@ describe('EventCreationForm', () => {
           target: { value: startDate },
         });
         fireEvent.input(endDateInput, {
-          target: { value: dayjs(startDate).subtract(1, 'hour').toISOString() },
+          target: { value: badEndDate },
         });
         fireEvent.submit(submitButton);
 
@@ -172,8 +163,6 @@ describe('EventCreationForm', () => {
 
     describe('with missing time zone', () => {
       test('should not execute request', async () => {
-        render(<EventCreationForm />);
-
         const nameInput = getNameInput();
         const startDateInput = getStartDateInput();
         const endDateInput = getEndDateInput();
@@ -201,10 +190,9 @@ describe('EventCreationForm', () => {
     });
 
     describe('with all required values', () => {
-      test('should execute request', async () => {
-        render(<EventCreationForm />);
-
+      it('should execute request', async () => {
         const nameInput = getNameInput();
+        const descriptionInput = getDescriptionInput();
         const startDateInput = getStartDateInput();
         const endDateInput = getEndDateInput();
         const submitButton = getSubmitButton();
@@ -212,6 +200,11 @@ describe('EventCreationForm', () => {
         fireEvent.input(nameInput, {
           target: { value: 'test name' },
         });
+
+        fireEvent.input(descriptionInput, {
+          target: { value: 'test desc' },
+        });
+
         fireEvent.input(startDateInput, {
           target: { value: startDate },
         });
@@ -219,8 +212,10 @@ describe('EventCreationForm', () => {
           target: { value: endDate },
         });
 
+        fireEvent.submit(submitButton);
+
         await waitFor(() => {
-          expect(mockExecute).toHaveBeenCalledTimes(0);
+          expect(mockExecute).toHaveBeenCalledTimes(1);
         });
       });
     });
