@@ -23,7 +23,7 @@ import java.util.Date;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class EventManagerApplicationTestsIT {
+class EventManagerApplicationTests {
 
 	@Autowired
 	private MockMvc mvc;
