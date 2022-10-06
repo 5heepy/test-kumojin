@@ -1,0 +1,13 @@
+services:
+  frontend:
+    image: event-manager/app
+    ports:
+      - 3000:3000
+    build: ./frontend
+
+  backend:
+    image: event-manager/backend
+    ports:
+      - 8080:8080
+    build: ./backend
+
