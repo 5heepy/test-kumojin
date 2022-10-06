@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import dayjs from 'dayjs';
+import { mapFormValuesToEvent } from '../helpers';
 import EventCreationForm from './EventCreationForm';
 
 const mockExecute = jest.fn();
@@ -191,6 +192,9 @@ describe('EventCreationForm', () => {
 
     describe('with all required values', () => {
       it('should execute request', async () => {
+        const testName = 'test name';
+        const testDesc = 'test desc';
+
         const nameInput = getNameInput();
         const descriptionInput = getDescriptionInput();
         const startDateInput = getStartDateInput();
@@ -198,11 +202,11 @@ describe('EventCreationForm', () => {
         const submitButton = getSubmitButton();
 
         fireEvent.input(nameInput, {
-          target: { value: 'test name' },
+          target: { value: testName },
         });
 
         fireEvent.input(descriptionInput, {
-          target: { value: 'test desc' },
+          target: { value: testDesc },
         });
 
         fireEvent.input(startDateInput, {
@@ -214,8 +218,16 @@ describe('EventCreationForm', () => {
 
         fireEvent.submit(submitButton);
 
+        const expectedEvent = mapFormValuesToEvent({
+          name: testName,
+          description: testDesc,
+          startDate,
+          endDate,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        });
+
         await waitFor(() => {
-          expect(mockExecute).toHaveBeenCalledTimes(1);
+          expect(mockExecute).toHaveBeenCalledWith(expectedEvent);
         });
       });
     });
