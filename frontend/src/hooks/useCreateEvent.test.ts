@@ -8,7 +8,7 @@ jest.mock('./useFetch', () => {
   };
 });
 
-fdescribe('useCreateEvent', () => {
+describe('useCreateEvent', () => {
   describe('when calling hook', () => {
     it('should call useFetch hook with correct function', () => {
       useCreateEvent();
