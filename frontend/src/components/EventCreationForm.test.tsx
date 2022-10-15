@@ -69,7 +69,7 @@ describe('EventCreationForm', () => {
     fireEvent.input(getTimeZoneInput(), {
       target: { value: values.timeZone },
     });
-  }
+  };
 
   beforeEach(() => {
     render(<EventCreationForm />);
@@ -153,7 +153,7 @@ describe('EventCreationForm', () => {
           name: 'test name',
           startDate,
         });
-        
+
         submitForm();
 
         await waitFor(() => {
