@@ -1,27 +1,32 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback } from 'react';
 import type { AxiosResponse } from 'axios';
+import { FetchStatus } from '../enums/fetchStatus';
 
-export const useFetch = (fetcher: (params?: any) => Promise<AxiosResponse>) => {
-    const [loading, setLoading] = useState(false);
-    const [value, setValue] = useState<AxiosResponse | null>(null);
-    const [error, setError] = useState<unknown>(null);
-  
-    const execute = useCallback(async (params: any) => {
-        setLoading(true);
-        setValue(null);
-        setError(null);
-  
-        try {
-            const response = await fetcher(params);
-            setValue(response);
-            setLoading(false);
-        } catch (error) {
-            console.log({ error })
-            setError(error);
-            setLoading(false);
-        }
-    }, [fetcher]);
+export const useFetch = <T>(
+  fetcher: (params?: any) => Promise<AxiosResponse<T, any>>
+) => {
+  const [status, setStatus] = useState(FetchStatus.PENDING);
+  const [result, setResult] = useState<T | null>();
+  const [error, setError] = useState<unknown>();
 
-  
-    return { execute, loading, value, error };
-  };
+  const execute = useCallback(
+    async (params: any) => {
+      setStatus(FetchStatus.FETCHING);
+      setResult(null);
+      setError(null);
+
+      try {
+        const response = await fetcher(params);
+        setResult(response.data);
+        setStatus(FetchStatus.SUCCESS);
+      } catch (error) {
+        console.log({ error });
+        setError(error);
+        setStatus(FetchStatus.ERROR);
+      }
+    },
+    [fetcher]
+  );
+
+  return { execute, status, result, error };
+};
