@@ -9,6 +9,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -24,6 +25,7 @@ public class Event {
     public static final String NAME_REQUIRED_ERROR = "Event name is required.";
     public static final String START_DATE_REQUIRED_ERROR = "Start date is required.";
     public static final String END_DATE_REQUIRED_ERROR = "End date is required.";
+    public static final String END_DATE_AFTER_START_DATE_ERROR = "End date should be after start date.";
 
     private static final int MAX_NAME_LENGTH = 32;
 
@@ -43,4 +45,11 @@ public class Event {
 
     @NotNull(message = END_DATE_REQUIRED_ERROR)
     private Date endDate;
+
+    @AssertTrue(message = END_DATE_AFTER_START_DATE_ERROR)
+    public boolean isEndDateAfterStartDate() {
+        if (startDate == null || endDate == null) return true;
+
+        return endDate.after(startDate);
+    }
 }

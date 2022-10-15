@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leobelanger.eventmanager.model.Event;
 import com.leobelanger.eventmanager.repository.EventRepository;
+import org.assertj.core.util.DateUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
+import java.util.Calendar;
 import java.util.Date;
 
 @SpringBootTest
@@ -114,6 +116,18 @@ class EventManagerApplicationTests {
 	}
 
 	@Test
+	@DisplayName("When creating event with end date before start date, should return error")
+	void testWhenCreatingEventWithEndDateBeforeStartDateShouldReturnError() throws Exception {
+		final var event = createEventFromName("Test Name");
+		event.setEndDate(DateUtil.yesterday());
+
+		mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.endDateAfterStartDate", is(Event.END_DATE_AFTER_START_DATE_ERROR)));
+	}
+
+	@Test
 	@DisplayName("When fetching events with some events, should return all events")
 	void testWhenFetchingEventsWithSomeEventsShouldReturnAllEvents() throws Exception {
 		final var eventName1 = "My test event 1";
@@ -143,8 +157,8 @@ class EventManagerApplicationTests {
 	private Event createEventFromName(String name) {
 		return Event.builder()
 			.name(name)
-			.startDate(new Date())
-			.endDate(new Date())
+			.startDate(DateUtil.now())
+			.endDate(DateUtil.tomorrow())
 			.build();
 	}
 }
