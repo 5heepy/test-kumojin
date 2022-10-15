@@ -15,11 +15,12 @@ import {
   Text,
   Textarea,
   Button,
+  useToast,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { EventCreationFormValues } from '../models';
 import { useCallback, useEffect } from 'react';
-import { FetchStatus } from '../enums/fetchStatus';
+import { FetchStatus } from '../enums';
 import { useCreateEvent } from '../hooks';
 
 const formDefaultValues: EventCreationFormValues = {
@@ -41,6 +42,8 @@ const EventCreationForm = () => {
 
   const { execute, status, result } = useCreateEvent();
 
+  const toast = useToast();
+
   const onSubmit = useCallback(
     async (data: EventCreationFormValues) => {
       const event = mapFormValuesToEvent(data);
@@ -53,15 +56,29 @@ const EventCreationForm = () => {
     if (status === FetchStatus.SUCCESS) {
       reset(formDefaultValues);
 
-      alert(`Event ${result?.name} created.`);
+      toast({
+        description: `Event ${result?.name} created.`,
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+        variant: 'left-accent',
+        position: 'bottom-right',
+      });
     }
-  }, [reset, result, status]);
+  }, [reset, result, status, toast]);
 
   useEffect(() => {
     if (status === FetchStatus.ERROR) {
-      alert('Could not create event.');
+      toast({
+        description: 'There was an error trying to create the event.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+        variant: 'top-accent',
+        position: 'bottom-right',
+      });
     }
-  }, [status]);
+  }, [status, toast]);
 
   const isLoading = status === FetchStatus.FETCHING;
 

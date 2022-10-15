@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
 import type { AxiosResponse } from 'axios';
-import { FetchStatus } from '../enums/fetchStatus';
+import { FetchStatus } from '../enums';
 
 export const useFetch = <T>(
   fetcher: (params?: any) => Promise<AxiosResponse<T, any>>
 ) => {
   const [status, setStatus] = useState(FetchStatus.PENDING);
-  const [result, setResult] = useState<T | null>();
-  const [error, setError] = useState<unknown>();
+  const [result, setResult] = useState<T | null>(null);
+  const [error, setError] = useState<unknown>(null);
 
   const execute = useCallback(
     async (params: any) => {
@@ -20,7 +20,7 @@ export const useFetch = <T>(
         setResult(response.data);
         setStatus(FetchStatus.SUCCESS);
       } catch (error) {
-        console.log({ error });
+        console.error({ error });
         setError(error);
         setStatus(FetchStatus.ERROR);
       }
