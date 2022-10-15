@@ -66,15 +66,64 @@ class EventManagerApplicationTests {
 	}
 
 	@Test
-	@DisplayName("When creating event with very long name, should throw exception")
-	void testWhenCreatingEventWithLongNameShouldThrowException() {
+	@DisplayName("When creating event with very name longer than 32 characters, should return error")
+	void testWhenCreatingEventWithLongNameShouldThrowException() throws Exception {
 		final var eventName = "This is a very long name trying to break the 32 characters barrier";
 
 		final var event = createEventFromName(eventName);
 
-		assertThrows(NestedServletException.class, () -> {
-			mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON));
-		});
+		mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.name", is(Event.NAME_MAX_LENGTH_ERROR)));
+	}
+
+	@Test
+	@DisplayName("When creating event with very name longer than 32 characters, should return error")
+	void testWhenCreatingEventWithLongNameShouldReturnError() throws Exception {
+		final var eventName = "This is a very long name trying to break the 32 characters barrier";
+
+		final var event = createEventFromName(eventName);
+
+		mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.name", is(Event.NAME_MAX_LENGTH_ERROR)));
+	}
+
+	@Test
+	@DisplayName("When creating event with no name, should return error")
+	void testWhenCreatingEventWithNoNameShouldReturnError() throws Exception {
+		final var event = createEventFromName(null);
+
+		mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.name", is(Event.NAME_REQUIRED_ERROR)));
+	}
+
+	@Test
+	@DisplayName("When creating event with no start date, should return error")
+	void testWhenCreatingEventWithNoStartDateShouldReturnError() throws Exception {
+		final var event = createEventFromName("Test name");
+		event.setStartDate(null);
+
+		mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.startDate", is(Event.START_DATE_REQUIRED_ERROR)));
+	}
+
+	@Test
+	@DisplayName("When creating event with no end date, should return error")
+	void testWhenCreatingEventWithNoEndDateShouldReturnError() throws Exception {
+		final var event = createEventFromName("Test Name");
+		event.setEndDate(null);
+
+		mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.endDate", is(Event.END_DATE_REQUIRED_ERROR)));
 	}
 
 	@Test
@@ -107,6 +156,8 @@ class EventManagerApplicationTests {
 	private Event createEventFromName(String name) {
 		return Event.builder()
 			.name(name)
+			.startDate(new Date())
+			.endDate(new Date())
 			.build();
 	}
 }

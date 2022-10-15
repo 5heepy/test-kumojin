@@ -20,6 +20,11 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Event {
+    public static final String NAME_MAX_LENGTH_ERROR = "Event name cannot be longer than 32 characters.";
+    public static final String NAME_REQUIRED_ERROR = "Event name is required.";
+    public static final String START_DATE_REQUIRED_ERROR = "Start date is required.";
+    public static final String END_DATE_REQUIRED_ERROR = "End date is required.";
+
     private static final int MAX_NAME_LENGTH = 32;
 
     @Id
@@ -27,15 +32,15 @@ public class Event {
     private Long id;
 
     @Column(length = MAX_NAME_LENGTH)
-    @Size(max = MAX_NAME_LENGTH)
-    @NotBlank(message = "Event name is required.")
+    @Size(max = MAX_NAME_LENGTH, message = NAME_MAX_LENGTH_ERROR)
+    @NotBlank(message = NAME_REQUIRED_ERROR)
     private String name;
 
     private String description;
 
-    @NotNull(message = "Event start date is required.")
+    @NotNull(message = START_DATE_REQUIRED_ERROR)
     private Date startDate;
 
-    @NotNull(message = "Event end date is required.")
+    @NotNull(message = END_DATE_REQUIRED_ERROR)
     private Date endDate;
 }
