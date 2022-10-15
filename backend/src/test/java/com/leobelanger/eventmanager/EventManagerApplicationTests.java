@@ -107,7 +107,6 @@ class EventManagerApplicationTests {
 	private Event createEventFromName(String name) {
 		return Event.builder()
 			.name(name)
-			.startDate(new Date())
 			.build();
 	}
 }
