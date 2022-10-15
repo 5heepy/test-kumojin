@@ -67,19 +67,6 @@ class EventManagerApplicationTests {
 
 	@Test
 	@DisplayName("When creating event with very name longer than 32 characters, should return error")
-	void testWhenCreatingEventWithLongNameShouldThrowException() throws Exception {
-		final var eventName = "This is a very long name trying to break the 32 characters barrier";
-
-		final var event = createEventFromName(eventName);
-
-		mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isBadRequest())
-				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.name", is(Event.NAME_MAX_LENGTH_ERROR)));
-	}
-
-	@Test
-	@DisplayName("When creating event with very name longer than 32 characters, should return error")
 	void testWhenCreatingEventWithLongNameShouldReturnError() throws Exception {
 		final var eventName = "This is a very long name trying to break the 32 characters barrier";
 
