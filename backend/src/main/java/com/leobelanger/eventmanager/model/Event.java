@@ -31,7 +31,6 @@ public class Event {
     @NotBlank(message = "Event name is required.")
     private String name;
 
-    @NotBlank(message = "Event name is required.")
     private String description;
 
     @NotNull(message = "Event start date is required.")
