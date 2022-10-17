@@ -1,0 +1,10 @@
+node_modules/
+target/
+.mvn/
+mvnw*
+*.iml
+README.md
+Dockerfile
+.gitignore
+.git
+docker/
