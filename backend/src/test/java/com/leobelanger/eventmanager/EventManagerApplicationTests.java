@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leobelanger.eventmanager.model.Event;
 import com.leobelanger.eventmanager.repository.EventRepository;
+import org.assertj.core.util.DateUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
+import java.util.Calendar;
 import java.util.Date;
 
 @SpringBootTest
@@ -66,15 +68,63 @@ class EventManagerApplicationTests {
 	}
 
 	@Test
-	@DisplayName("When creating event with very long name, should throw exception")
-	void testWhenCreatingEventWithLongNameShouldThrowException() {
+	@DisplayName("When creating event with very name longer than 32 characters, should return error")
+	void testWhenCreatingEventWithLongNameShouldReturnError() throws Exception {
 		final var eventName = "This is a very long name trying to break the 32 characters barrier";
 
 		final var event = createEventFromName(eventName);
 
-		assertThrows(NestedServletException.class, () -> {
-			mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON));
-		});
+		mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.name", is(Event.NAME_MAX_LENGTH_ERROR)));
+	}
+
+	@Test
+	@DisplayName("When creating event with no name, should return error")
+	void testWhenCreatingEventWithNoNameShouldReturnError() throws Exception {
+		final var event = createEventFromName(null);
+
+		mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.name", is(Event.NAME_REQUIRED_ERROR)));
+	}
+
+	@Test
+	@DisplayName("When creating event with no start date, should return error")
+	void testWhenCreatingEventWithNoStartDateShouldReturnError() throws Exception {
+		final var event = createEventFromName("Test name");
+		event.setStartDate(null);
+
+		mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.startDate", is(Event.START_DATE_REQUIRED_ERROR)));
+	}
+
+	@Test
+	@DisplayName("When creating event with no end date, should return error")
+	void testWhenCreatingEventWithNoEndDateShouldReturnError() throws Exception {
+		final var event = createEventFromName("Test Name");
+		event.setEndDate(null);
+
+		mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.endDate", is(Event.END_DATE_REQUIRED_ERROR)));
+	}
+
+	@Test
+	@DisplayName("When creating event with end date before start date, should return error")
+	void testWhenCreatingEventWithEndDateBeforeStartDateShouldReturnError() throws Exception {
+		final var event = createEventFromName("Test Name");
+		event.setEndDate(DateUtil.yesterday());
+
+		mvc.perform(post("/events").content(eventToJson(event)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.endDateAfterStartDate", is(Event.END_DATE_AFTER_START_DATE_ERROR)));
 	}
 
 	@Test
@@ -107,7 +157,8 @@ class EventManagerApplicationTests {
 	private Event createEventFromName(String name) {
 		return Event.builder()
 			.name(name)
-			.startDate(new Date())
+			.startDate(DateUtil.now())
+			.endDate(DateUtil.tomorrow())
 			.build();
 	}
 }

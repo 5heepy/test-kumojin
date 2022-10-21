@@ -7,7 +7,7 @@ const HomePage = () => {
   return (
     <Grid gap={6} pl={6}>
       <GridItem>
-        <Text fontSize='5xl'>Test Solutions Kumojin</Text>
+        <Text fontSize="5xl">Test Solutions Kumojin</Text>
       </GridItem>
       <GridItem>
         <EventCreationForm />
