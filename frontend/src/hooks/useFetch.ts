@@ -3,14 +3,14 @@ import type { AxiosResponse } from 'axios';
 import { FetchStatus } from '../enums';
 
 export const useFetch = <T>(
-  fetcher: (params?: any) => Promise<AxiosResponse<T, any>>
+  fetcher: (params?: unknown) => Promise<AxiosResponse<T>>
 ) => {
   const [status, setStatus] = useState(FetchStatus.PENDING);
   const [result, setResult] = useState<T | null>(null);
   const [error, setError] = useState<unknown>(null);
 
   const execute = useCallback(
-    async (params: any) => {
+    async (params: unknown) => {
       setStatus(FetchStatus.FETCHING);
       setResult(null);
       setError(null);
