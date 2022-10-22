@@ -19,7 +19,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { EventCreationFormValues } from '../models';
 import { useCallback } from 'react';
-import { useEventMutation } from '../hooks/useEventMutation';
+import { useEventMutation } from '../hooks';
 
 const formDefaultValues: EventCreationFormValues = {
   name: '',

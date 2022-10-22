@@ -1,2 +1,1 @@
-export * from './useCreateEvent';
-export * from './useFetch';
+export * from './useEventMutation';
